@@ -1,4 +1,5 @@
 import sys
+import time
 
 import smbus
 
@@ -47,6 +48,26 @@ try:
         sys.exit(0)
 except KeyboardInterrupt:
     sys.exit(0)
+
+print("MSA EEPROM password (format: 1a 2b 3c 4d; default: none)? ", end="")
+try:
+    password = input()
+    if password == "":
+        password = None
+    else:
+        password = [int(x, 16) for x in password.split()]
+        if len(password) != 4:
+            raise ValueError
+except KeyboardInterrupt:
+    sys.exit(0)
+except ValueError:
+    print("Invalid password format.")
+    sys.exit(1)
+
+if password is not None:
+    for i in range(0, 4):
+        bus.write_byte_data(0x51, 0x7b + i, password[i])
+    time.sleep(0.1)
 
 print()
 for i in range(0x00, 0x80):
